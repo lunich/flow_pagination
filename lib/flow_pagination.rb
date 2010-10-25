@@ -1,7 +1,9 @@
+require 'will_paginate/view_helpers/link_renderer'
+
 module FlowPagination
 
   # FlowPagination renderer for (Mislav) WillPaginate Plugin
-  class LinkRenderer < WillPaginate::LinkRenderer
+  class LinkRenderer < WillPaginate::ViewHelpers::LinkRenderer
 
     # Render flow navigation
     def to_html
@@ -16,16 +18,17 @@ module FlowPagination
         @url_params = {
           :controller => @template.controller_name,
           :action     => @template.action_name,
-          :page       => self.next_page
+          :page       => self.next_page,
         }
 
-        stringified_merge @url_params, @template_params if @template.request.get?
-        stringified_merge @url_params, @options[:params] if @options[:params]
+        symbolized_update @url_params, @template_params if @template.request.get?
+        symbolized_update @url_params, @options[:params] if @options[:params]
 
-        flow_pagination = @template.button_to_remote(
-            @template.t('flow_pagination.button', :default => 'More'),
-            :url    => @url_params.flatten_for_url,
-            :method => @template.request.request_method)
+        flow_pagination = @template.link_to(
+          @template.t('flow_pagination.button', :default => 'More'),
+          @url_params,
+          :remote => true,
+          :method => @template.request.request_method)
 
       end
 
@@ -34,7 +37,6 @@ module FlowPagination
     end
 
     protected
-
       # Get current page number
       def current_page
         @collection.current_page
@@ -42,7 +44,7 @@ module FlowPagination
 
       # Get last page number
       def last_page
-        @last_page ||= WillPaginate::ViewHelpers.total_pages_for_collection(@collection)
+        @last_page ||= @collection.total_pages
       end
 
       # Get next page number
