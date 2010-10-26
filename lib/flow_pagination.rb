@@ -18,11 +18,11 @@ module FlowPagination
         @url_params = {
           :controller => @template.controller_name,
           :action     => @template.action_name,
-          :page       => self.next_page,
         }
 
         symbolized_update @url_params, @template_params if @template.request.get?
         symbolized_update @url_params, @options[:params] if @options[:params]
+        symbolized_update @url_params, { :page => self.next_page }
 
         flow_pagination = @template.link_to(
           @template.t('flow_pagination.button', :default => 'More'),
@@ -44,7 +44,7 @@ module FlowPagination
 
       # Get last page number
       def last_page
-        @last_page ||= @collection.total_pages
+        @collection.total_pages
       end
 
       # Get next page number
